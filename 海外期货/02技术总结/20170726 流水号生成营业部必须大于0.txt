@@ -1,0 +1,2 @@
+报错：流水号生成营业部必须大于0
+说明fund表、fundaccount、fundjour等表可能存在branch_no为0的记录，看相关AP,branch_no被赋值为0后，后面插入的表中 可查到branch_no=0的记录。

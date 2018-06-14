@@ -1,0 +1,47 @@
+1、
+错误：
+/*V8.0.11.3 
+
+ xxx xxxxx
+
+*/
+
+正确：
+/*
+V8.0.11.3 
+
+ xxx xxxxx
+
+*/
+
+2、语句行间不要用空行
+
+3、被注释的代码中要注意：
+错误：
+/*
+   20170411 注销
+  --M201701060616 江定军 因支持隔夜拆借利率功能 新增
+  [事务处理开始]
+    @status := v_status_t ;--因为入参v_status_t 不能被赋值，所以使用变量过渡
+    if @interest_kind = '0' then --//普通银行利率  按原有的算法更新
+        begin
+          update fund 
+            set integral_balance = 0,
+.........
+*/
+
+正确：
+/*
+   20170411 注销
+  --M201701060616 江定军 因支持隔夜拆借利率功能 新增
+  [事务处理开始]
+    --@status := v_status_t ;--因为入参v_status_t 不能被赋值，所以使用变量过渡
+    if @interest_kind = '0' then --//普通银行利率  按原有的算法更新
+        begin
+          update fund 
+            set integral_balance = 0,
+.........
+*/
+
+@status := v_status_t ;--因为入参v_status_t 不能被赋值，所以使用变量过渡
+需要单独用"--"注释

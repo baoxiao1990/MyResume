@@ -1,0 +1,29 @@
+bpl是delphi的控件包文件。可以用来安装delphi控件
+添加方法: 菜单component->Install Packets 按Add按钮,选择目录里bpl文件
+就可以了
+如果执行的时候提示缺少什么XXX.dcu文件，那你就将控件目录里包含XXX.dcu或xxx.pas文件的目录
+加入到Tools--> Environment Options中的Lib目录中即可
+查找*.dpr文件中各引用文件的目录，看是否一致
+-----------------------------------------------------
+1. 先找Tools--> Environment Options中的Lib目录
+2. 然后找options-->search_library下的相对路径；
+3. 1和2等价，所以，可以把Environment Options中的冗余引用，放到工程级的options目录下，采取相对引用的方式
+----------------------------------------------------------------------------------------------------------------------
+由dpr文件的runtime library（或者dpk文件的requires子句）出发，再继续搜索这些bpl require的bpl，直到获得所需的所有bpl文件。设这些bpl中包含的Unit组成集合A。然后从dpr文件的uses子句（或dpk文件的contains子句）出发，生成工程所需Unit的集合B。则最后编译目标仅包含B-A。
+集合B中的Unit，如果存在于集合A中，则在连接时不需要对应的dcu文件，有bpl和bpc就好了。而B-A部分，要么必须有pas文件，要么需要有dcu文件。
+------------------------------------------------------------------------------------------------------------------
+delphi required package"....." not found
+安装控件时，只会添加不会删除是不行的，把delphi整个ide弄的非常臃肿。出现以上情况是
+以前的包已经不存在了 要在package里面删除掉
+如下： 
+    在delphi菜单   Project -- Options -- Packages 中   
+   选中   build with runtime packages 
+
+然後, 在下面那列 
+vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;... 
+
+找到     “...”{找不到的包名} , 然後去掉, 
+再 去掉 選中 build with runtime packages 
+
+保存!  
+顶 	

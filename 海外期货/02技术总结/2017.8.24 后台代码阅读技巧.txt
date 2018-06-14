@@ -1,0 +1,54 @@
+1. 后台的日期格式都是Number型的，注意，在拼接字符串的时候，需要注意格式化串的类型：string——%s，char——%c，Number——%d
+hs_snprintf(@sSql, 16000,"%s \n %s%d%s%d",  @sSql," and ",@date_p, " = ", @date_update);
+2. 在AS中编写sql语句：可参照AF_期货参数_交易日期设置
+-----1------
+[PRO*C语句][select count(*) into @rowcount from dual where 
+     exists (select * from exchangedate where exchange_type = trim(@futu_exch_type) 
+                                                       and init_date = @exchange_date 
+                                                       and finance_type = @finance_type)]
+     {
+       if(@rowcount>0)
+         {
+           [函数报错返回][ERR_USER_EXCHANGEDATE_EXISTS][交易日期对应表记录已存在][@futu_exch_type, @exchange_date,@finance_type]
+         }
+     }
+     else//else部分对函数报错进行处理
+     {
+       [函数报错返回][ERR_USER_QRY_EXCHANGEDATE_FAIL][查询交易日期表失败][@futu_exch_type, @exchange_date,@finance_type]
+     }
+-----2-----
+[PRO*C插入表记录][exchangedate][exchange_type=@futu_exch_type, 
+                                  init_date=@exchange_date, 
+                                  finance_type=@finance_type,
+                                  treat_flag=@treat_flag]
+     hs_strcpy(@op_remark,"插入exchangedate表记录");
+     [PRO*C事务提交]
+-----3------	
+[PRO*C语句][update exchangedate set treat_flag = @treat_flag 
+                                 where exchange_type = trim(@futu_exch_type) 
+                                 and init_date = @exchange_date 
+                                 and finance_type = @finance_type]
+    {
+      [PRO*C函数无记录事务内报错返回][ERR_USER_EXCHANGEDATE_NOTEXISTS][交易日期对应表记录不存在][@futu_exch_type, @exchange_date,@finance_type]
+      [PRO*C事务提交]
+    }
+    else
+    {
+      [PRO*C事务回滚]
+      [函数报错返回][ERR_USER_MOD_EXCHANGEDATE_FAIL][修改交易日期表失败][@futu_exch_type, @exchange_date,@finance_type]
+    }
+3. 	Ecllipse代码排版小技巧
+打开窗口-首选项-常规-编辑器-Text Editors-Show White space characters(显示隐藏字符)
+
+4. Oracle日期转换规律，date格式的变量可自由加减，文本型的需要格式化函数to_char(@date, 'yyyymmdd')后获取
+select  to_number(to_char(to_date(@end_date, 'yyyymmdd')+1, 'yyyymmdd')) into @date_update from dual
+
+5. 恒生后台日期类参数都是HsDate型，即Integer型
+
+6. where rownum<30 条件必须在Order By语句之后，因为Oracle在解析Rownum时，仅获取每条记录的物理序号，而非order by之后有序的序号
+
+7. where 1 = 1 ， sysarg.init_date = @end_date 之类与查询结果字段无关的条件，可用作开关，过滤结果集
+
+
+
+

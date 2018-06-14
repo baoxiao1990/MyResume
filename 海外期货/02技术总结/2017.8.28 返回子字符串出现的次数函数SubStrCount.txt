@@ -1,0 +1,7 @@
+2017.8.28 返回子字符串出现的次数函数SubStrCount
+function TfrmSetFutuFares.SubStrCount(mStr, mSub: string): Integer;
+begin
+  Result :=
+    (Length(mStr) - Length(StringReplace(mStr, mSub, '', [rfReplaceAll]))) div
+    Length(mSub);
+end;

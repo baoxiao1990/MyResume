@@ -1,0 +1,3 @@
+1. char类型的输出：  printf("p_product_flag:%c\n ",@product_flag);
+2. string类型的输出：printf("tmp_op_query_limits:%s\n ",@tmp_op_query_limits);
+3. integer类型的输出：printf("@tem_bfare_kind：%d", @bfare_kind);

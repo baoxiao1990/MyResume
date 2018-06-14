@@ -1,0 +1,10 @@
+1. 在Tools-Environment Options-Library path中加入Delphi安装目录下的Source\Indy路径的引用
+
+2. 在IdMessage.pas文件中加入以下代码:
+initialization
+ if GetClass('TIdAttachment') = nil then
+  RegisterClasses([TIdAttachment, TIdText]);
+end.
+并重新编译，放到C:\Program Files (x86)\Borland\Delphi6\Lib\Debug目录下
+
+3. Delphi 最好不要装在x86目录下

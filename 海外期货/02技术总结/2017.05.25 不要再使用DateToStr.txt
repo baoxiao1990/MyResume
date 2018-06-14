@@ -1,0 +1,15 @@
+@全体成员 以后柜台开发时，不要再使用delphi中的DateToStr函数，所有DateToStr都改为FormatDateTime
+程效(859243920) 2017-05-25 9:25:24查看前后消息
+这两个函数代码上没有区别：
+function DateToStr(const DateTime: TDateTime): string;
+begin
+  DateTimeToString(Result, ShortDateFormat, DateTime);
+end;
+
+function FormatDateTime(const Format: string; DateTime: TDateTime): string;
+begin
+  DateTimeToString(Result, Format, DateTime);
+end;
+
+前者用了日期格式的全局变量，后者要自己指定日期格式，ShortDateFormat如果被别的代码改了，你的代码就可能无法得到你预期的日期格式，从而导致代码出问题。
+strtoDate依然可用，没有影响
