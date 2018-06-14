@@ -1,0 +1,2 @@
+https://scm.hundsun.com/pkgManage/#
+既可以取包，也可查询SVN权限的网站

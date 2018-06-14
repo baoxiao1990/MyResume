@@ -1,0 +1,7 @@
+pc文件为pro*c产生的文件；
+
+CPP文件、gcc文件为服务、函数生成的文件；
+
+【M201609290180】[综合][报表][BL2015SP7]EXCEL报表中的繁体公司名称乱码【预计0.5人日】
+
+学习\trunk\Management\M6.Training\香港基础知识培训\Excel后台常见问题.docx和\trunk\Management\M6.Training\开发规范和开发注意点.doc【1人日】

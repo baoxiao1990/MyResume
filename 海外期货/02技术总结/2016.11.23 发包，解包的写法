@@ -1,0 +1,403 @@
+getCommClient(sendComm);
+  iFunctionID := FUNC_CRDT_MVMONITOR_GET;
+
+  SendPack.Sections[0].SetRange(16,1);
+  SendPack.Sections[0].AddField('op_branch_no');
+  SendPack.Sections[0].AddField('operator_no');
+  SendPack.Sections[0].AddField('user_type');
+  SendPack.Sections[0].AddField('op_station');
+
+  SendPack.Sections[0].AddField('op_entrust_way');
+  SendPack.Sections[0].AddField('menu_id');
+
+  SendPack.Sections[0].AddField('function_id');
+  SendPack.Sections[0].AddField('reverse_rate');
+
+  SendPack.Sections[0].AddField('parameter_str');
+  SendPack.Sections[0].AddField('action_in');
+  SendPack.Sections[0].AddField('page_num');
+  SendPack.Sections[0].AddField('page_size');
+  SendPack.Sections[0].AddField('cal_mvplus');
+  SendPack.Sections[0].AddField('client_id');
+  SendPack.Sections[0].AddField('fund_account');
+  SendPack.Sections[0].AddField('is_interface');
+
+  SendPack.Sections[0].AddValue(PersonalData.Value['BranchNo']);
+  SendPack.Sections[0].AddValue(PersonalData.Value['OperCode']);
+  SendPack.Sections[0].AddValue(PersonalData.Value['OperatorKind']);
+  MAC := PersonalData.Value['MAC'];
+  SendPack.Sections[0].AddValue(MAC);
+
+  SendPack.Sections[0].AddValue('4');
+  SendPack.Sections[0].AddValue(BizID);
+
+  SendPack.Sections[0].AddValue(iFunctionID);
+  SendPack.Sections[0].AddValue(0);
+
+
+  SendPack.Sections[0].AddValue('');
+  SendPack.Sections[0].AddValue(0);
+  SendPack.Sections[0].AddValue(MvPageSet.iCurrPage);
+  SendPack.Sections[0].AddValue(MvPageSet.iPageSize);
+  if bCalMVPlusRatioFlag then //计算mv+比例时传1
+    SendPack.Sections[0].AddValue(1)
+  else
+    SendPack.Sections[0].AddValue(0);
+  SendPack.Sections[0].AddValue(hedCltId.Text);
+  SendPack.Sections[0].AddValue(hcbFundAccount.Text);
+  SendPack.Sections[0].AddValue('0');      // 默认'1'是周边接口,'0'内部接口
+
+  iPackID := SendComm.Put(PersonalData.Value['BranchNo'],iFunctionID,SendPack.Buffer,SendPack.Length,5);
+  SendComm.Get(30000,iPackID);
+  RecvPack.Open(SendComm.Buffer, SendComm.Length);
+
+  // 处理应答
+  if SendComm.ReturnCode <> 0 then // 错误处理
+  begin
+    pub_ErrorMsgAndLog(RecvPack);
+    Result := False;
+    FreeWaitQuery;
+    Exit;
+  end
+  else
+  begin
+    mtblhData.DisableControls;
+    pRecordBookMark := mtblhData.GetBookmark;
+
+    with RecvPack.Sections[0]{Unpacker} do
+    try
+      try
+        First;
+
+        mtblhData.EmptyTable;
+        hgridData.SumList.ClearSumValues;
+        while not Eof do
+        begin
+          mtblhData.Append;
+          sCrdtProp := FieldByName('crdt_prop').AsString;
+--------------------------------------------------------------------------------------------
+ with THSFormBase(Owner) do
+  begin
+    ARCom.ConstructHead(iFunctionId, Packer);
+    Packer.Field['op_branch_no'].Value := PersonalData.Value['BranchNo'];
+    Packer.Field['operator_no'].Value := PersonalData.Value['OperCode'];
+     //Packer.Field['user_type'].Value := PersonalData.Value['OperatorKind'];
+    Packer.Field['op_station'].Value := PersonalData.Value['MAC'];
+    Packer.Field['op_entrust_way'].Value := '4';
+    Packer.Field['menu_id'].Value := BizID;
+    Packer.Field['function_id'].Value := iFunctionId;
+    Packer.Field['stock_code'].Value := FStockCode;
+    Packer.Field['entrust_price'].Value := FEntrustPrice;
+     //20091103 陈加磊解决获取价差临界值问题
+    Packer.Field['action_in'].Value := Action_int;
+     //Packer.Field['stock_type'].Value := FStockType;
+    Packer.Field['exchange_type'].Value := ExchFlag;
+
+    SendRecievePack(20000);
+
+    if Unpacker.ReturnCode <> 0 then                                            //错误处理
+    begin
+         {MessageDlg(TranslatePas('Error No.:','CLASS_PAS') + Unpacker.Field['error_no'].Value + #10#13 +
+          TranslatePas('System Service Number:','CLASS_PAS') + Unpacker.Field['error_svrno'].Value + #10#13 +
+          TranslatePas('Error Info:','CLASS_PAS') + Unpacker.Field['error_info'].Value, mtWarning, [mbOK], 0);}
+      FSpreadCode := 0;
+      FSpreadValue := 0.0;
+      Result := False;
+    end
+    else
+    begin
+      Result := True;
+      FSpreadCode := Unpacker.Field['spread_code'].Value;
+      FMaxPrice := Unpacker.Field['max_price'].Value;
+      FMinPrice := Unpacker.Field['min_price'].Value;
+       //Unpacker.Field['max_price'].Value;
+       //Unpacker.Field['min_price'].Value;
+      if (FEntrustPrice > Unpacker.Field['max_price'].Value) or (FEntrustPrice < Unpacker.Field['min_price'].Value) or ((Action_int = 1) and (FEntrustPrice = Unpacker.Field['max_price'].Value)) or ((Action_int = 2) and (FEntrustPrice = Unpacker.Field['min_price'].Value)) then
+        FSpreadValue := 0.00
+      else
+        FSpreadValue := Unpacker.Field['spread_value'].Value;
+
+    end;
+  end;		  
+-------------------------------------------------------------------------------------------------
+with THsFormBase(FOwner) do
+  begin
+    // 构造请求包
+    ARCom.ConstructHead(110038, Packer);
+    Packer.Field['operator_no'].Value := PersonalData.Value['OperCode'];          //操作员编号
+    Packer.Field['op_branch_no'].Value := PersonalData.Value['BranchNo'];         //操作员分支代码
+    Packer.Field['user_type'].Value := PersonalData.Value['OperatorKind'];        //用户类别
+    Packer.Field['op_station'].Value := PersonalData.Value['MAC'];                //操作站点
+    Packer.Field['op_entrust_way'].Value := '4';                                  //操作委托方式
+    Packer.Field['menu_id'].Value := BizID;                                       //菜单项标识
+    Packer.Field['function_id'].Value := 110038;                                  //功能号
+    Packer.Field['op_password'].Value := PersonalData.Value['Password'];          //操作员密码
+    Packer.Field['user_id'].Value := PersonalData.Value['OperCode'];                                            //用户编号
+    Packer.Field['branch_no'].Value := InterComm.BranchNo;                                          //分支代码
+    SendRecievePack(5000);
+    if Unpacker.ReturnCode <> 0 then   //错误处理
+    begin
+      //MessageDlg(TranslatePas('Error No.:','PUB_PAS') + Unpacker.Field['error_no'].Value + #10#13 +
+      //           TranslatePas('System Service Number:','PUB_PAS') + Unpacker.Field['error_svrno'].Value  + #10#13 +
+      //           TranslatePas('Error Info:','PUB_PAS') + Unpacker.Field['error_info'].Value, mtWarning, [mbOK], 0);
+      //20091024 陈方明 修改使用公用函数展现错误信息
+      pub_ErrorMsgWithLog(Unpacker);
+    end
+    else  //正确处理
+    begin
+      if not UnPacker.Eof then
+        rights := UnPacker.Field['operator_rights'].Value;
+      //无密操作允许
+      if pos('b', rights) = 0 then
+        result := false
+      else
+        result := true;
+    end;
+  end;  
+----------------------------------------------------------------------------------------
+//取银行账户信息
+{function TFund.GetBankAccoInfo(iFundAccount: Integer; sBankNo: String; sBankAccount: String; cMoneyType: Char = ' '): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := BankAccoInfo.Count - 1 downto 0 do
+  begin
+    pAnswer := pAnswer161008(BankAccoInfo.Items[i]);
+    Dispose(pAnswer);
+  end;
+  pAnswer := nil;
+  BankAccoInfo.Clear;
+  MidProc := TFunc161008.Create(FOwner);
+  try
+    with MidProc do
+    begin
+      FillChar(sRequest, SizeOf(sRequest), #0);
+      sRequest.version := 1;
+      sRequest.op_branch_no := InterComm.BranchNo; //柜员营业部号
+      StrCopy(sRequest.operator_no, InterComm.OperCode); //柜员工号
+      StrLCopy(sRequest.op_password, InterComm.Password, SizeOf(sRequest.op_password) - 1); //柜员密码
+      StrLCopy(sRequest.op_station, InterComm.MAC, SizeOf(sRequest.op_station) - 1); //工作站网卡号
+      sRequest.op_entrust_way := C_ENTRUST_WAY;
+      sRequest.function_id := 22014;
+      sRequest.user_type := ' ';
+      sRequest.menu_id := 11401;
+      sRequest.money_type := cMoneyType;
+      StrPCopy(sRequest.bank_no, sBankNo);
+      StrPCopy(sRequest.bank_account, sBankAccount);
+      sRequest.fund_account := iFundAccount;
+      try
+        if Execute = 0 then
+        begin
+          while not Unpacker.Eof do
+          begin
+            New(pAnswer);
+            pAnswer^.fund_account := Unpacker.Field['branch_no'].Value;
+            StrPLCopy(pAnswer^.bank_no, Unpacker.Field['bank_no'].Value, SizeOf(pAnswer^.bank_no)-1);   //银行代码
+            pAnswer^.money_type := StringOneToChar(Unpacker.Field['money_type'].Value); //币种类别
+            StrPLCopy(pAnswer^.bank_account, Unpacker.Field['bank_account'].Value, SizeOf(pAnswer^.bank_account) - 1); //银行帐号
+            try
+              StrPLCopy(pAnswer^.client_account, Unpacker.Field['client_account'].Value, SizeOf(pAnswer^.client_account)-1);   //银行帐号
+            except
+              pAnswer^.client_account := '0';
+            end;
+            //pAnswer^.bkaccount_kind := StringOneToChar(Unpacker.Field['bkaccount_kind'].Value); //帐号类别
+            pAnswer^.fund_account :=  Unpacker.Field['fund_account'].Value;
+            pAnswer^.main_flag := StringOneToChar(Unpacker.Field['main_flag'].Value); //主副标志保留
+            pAnswer^.id_kind := StringOneToChar(Unpacker.Field['id_kind'].Value); //证件类别
+            StrPLCopy(pAnswer^.id_no, Unpacker.Field['id_no'].Value, SizeOf(pAnswer^.id_no) - 1); //证件号码
+            StrPLCopy(pAnswer^.holder_name, Unpacker.Field['holder_name'].Value, SizeOf(pAnswer^.holder_name) - 1); //帐户姓名
+            pAnswer^.bkaccount_status := StringOneToChar(Unpacker.Field['bkaccount_status'].Value); //帐户状态
+            StrPLCopy(pAnswer^.en_entrust_way, Unpacker.Field['en_entrust_way'].Value, SizeOf(pAnswer^.en_entrust_way) - 1);
+            StrPLCopy(pAnswer^.bkaccount_rights, Unpacker.Field['bkaccount_rights'].Value, SizeOf(pAnswer^.bkaccount_rights) - 1);
+            StrPLCopy(pAnswer^.bkaccount_restrict, Unpacker.Field['bkaccount_restrict'].Value, SizeOf(pAnswer^.bkaccount_restrict) - 1);
+            pAnswer^.authorize_code := Unpacker.Field['authorize_code'].Value;
+            pAnswer^.upper_limit_out := Unpacker.Field['upper_limit_out'].Value;
+            pAnswer^.lower_limit_out := Unpacker.Field['lower_limit_out'].Value;
+            pAnswer^.upper_limit_in := Unpacker.Field['upper_limit_in'].Value;
+            pAnswer^.lower_limit_in := Unpacker.Field['lower_limit_in'].Value;
+            pAnswer^.open_date := Unpacker.Field['open_date'].Value;
+            BankAccoInfo.Add(pAnswer);
+            Unpacker.MoveNext;
+            pAnswer := nil;
+          end;
+          Result := True;
+        end;
+      except
+        if assigned(pAnswer) then
+          Dispose(pAnswer);
+        raise;
+      end;
+    end;
+  finally
+    MidProc.Free;
+  end;
+end;}
+----------------------------------------------------------------------------------------------------
+type
+  pTradeDate = ^TTradeDateInfo; --声明类bx
+  TTradeDateInfo = record       --定义类bx
+    exchange_type: string;
+    exchange_name: string;
+    market_status: string;
+    trade_date: Integer;
+    autorept_status: string;
+    trade_stage: string;
+    trade_flagstr: string;
+    clear_date: Integer;
+    clear_status: string;
+    treat_flag: string;
+    realmkt_flag: string;
+    trade_date_diff: Integer;
+    next_clear_date: Integer;
+    day_end: string;
+    current_date: Integer;
+    init_date: Integer;
+    binit_date: Integer;
+    next_binit_date: Integer;
+    next_clear_date_front: Integer;
+    iModify: Integer;        //修改标志
+  end;
+
+
+
+function TTradeDateList.ReadData(pItem: pTradeDate; iInitDate: integer): Integer;
+var
+  pTemp: pTradeDate;         --声明类的变量bx
+  flaga, flagb: boolean;
+begin
+  Result := 0;
+  Clear;
+  with (Self.FfrmCurrent as THSFormBase) do
+  begin
+      // 构造请求包
+    ARCom.ConstructHead(820004, Packer);
+    Packer.Field['op_branch_no'].Value := PersonalData.Value['BranchNo'];         //操作员分支代码
+    Packer.Field['operator_no'].Value := PersonalData.Value['OperCode'];          //操作员编号
+    Packer.Field['op_station'].Value := PersonalData.Value['MAC'];                //操作站点
+    Packer.Field['op_entrust_way'].Value := '4';                                  //操作委托方式
+    Packer.Field['menu_id'].Value := BizID;                                       //菜单项标识
+    Packer.Field['function_id'].Value := 820004;                                  //功能号
+    Packer.Field['op_password'].Value := PersonalData.Value['Password'];          //操作员密码
+        //发送请求，接收应答
+    SendRecievePack(5000);
+      //处理应答包
+    if Unpacker.ReturnCode <> 0 then   //错误处理
+    begin
+      pub_ErrorMsgWithLog(Unpacker);
+    end
+    else  //正确处理
+    begin
+      with Unpacker do
+      begin
+        MoveFirst;
+        while not eof do
+        begin
+          New(pTemp);  --初始化类的变量bx
+          pTemp^.exchange_type := Field['exchange_type'].Value;
+          pTemp^.exchange_name := Field['exchange_name'].Value;
+          pTemp^.trade_date := Field['init_date'].Value;
+          pTemp^.autorept_status := Field['autorept_status'].Value;
+          pTemp^.trade_flagstr := Field['trade_flagstr'].Value;
+          pTemp^.trade_stage := Field['trade_flag'].Value;
+          pTemp^.clear_date := Field['binit_date'].Value;
+          pTemp^.clear_status := Field['clear_status'].Value;
+          pTemp^.treat_flag := trim(Field['treat_flag'].Value);
+          pTemp^.realmkt_flag := Field['realmkt_flag'].Value;
+          pTemp^.trade_date_diff := Field['trade_date_diff'].Value;
+          pTemp^.next_clear_date := Field['next_binit_date'].Value;
+                // Modified by wangnt    增加市场状态判断标志
+          if (pTemp^.trade_date = pTemp^.clear_date) and (strtoint(trim(pTemp^.trade_stage)) <> 1) then
+            pTemp^.market_status := 'Waiting For Start'
+          else if (pTemp^.trade_date = pTemp^.clear_date) and (strtoint(trim(pTemp^.trade_stage)) = 1) then
+            pTemp^.market_status := 'Waiting For Close'
+          else if pTemp^.trade_date > pTemp^.clear_date then
+            pTemp^.market_status := 'Clearing';
+                // Modified by zhaich 2015/9/23 10:05:01   判断方式修改，跟证券汇总的判断保持一致
+          if (pTemp^.clear_date < pTemp^.trade_date) and (incday(hsinttodate(pTemp^.clear_date), -1 * pTemp^.trade_date_diff) <= hsinttodate(iInitDate)) then
+                //if (incday(hsinttodate(pTemp^.clear_date), -1*pTemp^.trade_date_diff) < hsinttodate(pTemp^.trade_date))  then
+          begin
+            pTemp^.day_end := 'Enable';
+          end
+          else
+            pTemp^.day_end := 'Disable';
+//                ShowMessage(pTemp^.trade_control);
+          Add(pTemp);
+          MoveNext;
+        end;
+      end;
+    end;
+
+  end;
+end;
+----------------------------------
+procedure TfrmTradeDate.DrawItem(pTmp: pTradeDate; iFlag: Integer);
+var
+  pTemp: pTradeDate;
+  Litem: TListItem;
+begin
+  with pTmp^do
+  begin
+    itema := TStringlist.Create;
+    itemb := TStringlist.Create;
+    InterComm.Dictionary.ItemsByKey(itema, DICT_MARKET_STATUS, '');
+    InterComm.Dictionary.ItemsByKey(itemb, DICT_SYSTEM_STATUS, '');
+    InterComm.Dictionary.ItemsByKey(clb1.Items, DICT_MARKET_STATUS, '');
+    InterComm.Dictionary.ItemsByKey(clb2.Items, DICT_SYSTEM_STATUS, '');
+    New(pTemp);
+    case iFlag of
+      ACTION_NOCHANGE:
+        begin
+          lstTradeDate.TransferData(pTemp, pTmp);
+          Litem := lst1.Items.Add();
+          Litem.Caption := exchange_type;
+          Litem.SubItems.Add(exchange_name);
+          Litem.SubItems.Add(TranslatePas(market_status, 'C_SYSTEM_PAS'));
+          Litem.SubItems.Add(IntToStr(trade_date));
+          if trade_stage = '2' then
+          begin
+            Litem.SubItems.Add('YTD Closed');  //Yesteday Close:上一交易日已收市
+          end
+          else
+            Litem.SubItems.Add(InterComm.Dictionary.GetPrompt(DICT_MARKET_STATUS, trade_stage));
+//            Litem.SubItems.Add(InterComm.Dictionary.GetPrompt(DICT_EXCHANGE_STATUS, trade_control));
+          Litem.SubItems.Add(InterComm.Dictionary.GetPrompt(DICT_AUTO_REPROT_STATUS, autorept_status));
+          Litem.SubItems.Add(IntToStr(clear_date));
+            // Modified by zhaich 2015/9/17 13:52:52 修正代码
+            //if StrToInt(clear_status) = 1 then
+          if clear_status = '1' then
+            Litem.SubItems.Add('Normal')
+          else
+            Litem.SubItems.Add(InterComm.Dictionary.GetPrompt(DICT_SYSTEM_STATUS, clear_status));
+            // Modified by zhaich 2015/9/17 13:53:46 修正代码
+            //if StrToInt(realmkt_flag) = 0 then
+          if realmkt_flag = '0' then
+            Litem.SubItems.Add('Yes')
+          else
+            Litem.SubItems.Add('No');
+          Litem.SubItems.Add(IntToStr(trade_date_diff));
+          Litem.SubItems.Add(IntToStr(next_clear_date));
+          Litem.SubItems.Add(day_end);
+          Litem.Data := pTemp;
+        end;
+      ACTION_INSERT:
+        begin
+          lstTradeDate.TransferData(pTemp, pTmp);
+          Litem := lst1.Items.insert(0);
+          Litem.Caption := exchange_type;
+          Litem.SubItems.Add(exchange_name);
+          Litem.SubItems.Add(market_status);
+          Litem.SubItems.Add(IntToStr(trade_date));
+          Litem.SubItems.Add(trade_stage);
+          Litem.SubItems.Add(autorept_status);
+          Litem.SubItems.Add(IntToStr(clear_date));
+          Litem.SubItems.Add(clear_status);
+          Litem.SubItems.Add(realmkt_flag);
+          Litem.SubItems.Add(IntToStr(trade_date_diff));
+          Litem.SubItems.Add(IntToStr(next_clear_date));
+          Litem.SubItems.Add(sDayEnd);
+          Litem.Data := pTemp;
+        end;
+    end;
+  end;
+end;

@@ -1,0 +1,17 @@
+疑问：current_amount期初数量，如果是日终后下一天交易日的初始值，那么为什么这里是减去未回买入数量，加上卖出数量？
+解答：一旦交易，current_amount就实时变动，是吗？
+未回买入数量，是指委托的买入的股票没有成功，没有成交，所以要减去，未回卖出，也是没有成交，要加回来
+
+               b.current_amount - b.uncome_buy_amount + b.uncome_sell_amount current_amount,
+               b.uncome_buy_amount - b.uncome_sell_amount uncome_amount,
+资金的加减法则刚好相反，回报买入金额就是指当天的成交买入金额(当日该股票总的买入成交金额,包括佣金、印花税及所有其他费用,是账户中的回收资金)，还没有到T+2日交收，就没到current_amount里，卖出的，T+2日交收前，还算是该账户的？
+round(round((case when least(sum((hs_fund.fund.current_balance - nvl(hs_fund.fundreal.real_buy_balance, 0) +
+                               nvl(hs_fund.fundreal.real_sell_balance, 0) - hs_fund.fund.fine_integral) *
+                               nvl(sr.exch_rate, 1)),0) >= 0 then 0
+                     when nvl(b.market_value, 0) <= 0 then
+                      999999.9999
+                     else
+                      abs(least(sum((hs_fund.fund.current_balance - nvl(hs_fund.fundreal.real_buy_balance, 0) +
+                               nvl(hs_fund.fundreal.real_sell_balance, 0) - hs_fund.fund.fine_integral) *
+                               nvl(sr.exch_rate, 1)),0)) / nvl(b.market_value, 0)
+                   end),4) * 100, 2) as pv_ratio

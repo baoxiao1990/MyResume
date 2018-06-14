@@ -1,0 +1,41 @@
+procedure TfrmEmail.CreateLog(LogFile, LogStr: string);
+var
+  tmpstr: string;
+  FileName: string;
+  tmpfile: TextFile;
+  FileHandle: Integer;
+begin
+  try
+    FileName := LogFile;
+    tmpstr := LogStr;
+    if not FileExists(FileName) then
+    begin
+      FileHandle := FileCreate(FileName);
+      FileClose(FileHandle);
+    end;
+    AssignFile(tmpfile, FileName);
+    try
+      reset(tmpfile);
+    except       //打开文件出现异常的处理
+      on EInOutError do
+      begin
+        try
+          if fileExists(FileName) = false then //如果文件不存在，创建
+          begin
+            rewrite(tmpfile);
+          end
+          else     //文件存在，但是打不开，说明该文件有问题
+            MessageDlg(TranslatePas('Cannot open file!', 'C_RISKBUSIN_PAS'), mtWarning, [mbOK], 0);
+        except   //创建新文件时出现异常的处理
+          on EInOutError do
+            MessageDlg(TranslatePas('Cannot create file!', 'C_RISKBUSIN_PAS'), mtWarning, [mbOK], 0);
+        end;
+      end;
+    end;
+    Append(tmpfile);
+    Writeln(tmpfile, tmpstr);
+    Flush(tmpfile);
+  finally
+    CloseFile(tmpfile);
+  end;
+end;

@@ -1,0 +1,2 @@
+Project-Project options-Directory/conditionals:
+Debug Source Path:工程引用的pas文件的引用地址。工程会用到的外部pas文件路径在此设置

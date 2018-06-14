@@ -1,0 +1,10 @@
+如果按F12出不来前台界面，那么在tools下确认
+1. Tools-Environment options-Library,Library Path下只有一个路径：
+D:\HsTradesHK_RD\trunk\Sources\ClientCom\Control
+因为IDE会自动到以上目录下去找bpl，且第三方的路径，仅此一个就好。
+
+2. 如果控件重新安装后还是不行，那就关了该pas界面，再重新打开即可见form了。
+
+3. 界面布局可以保存，Desktop speedsettings
+
+4. view-Project Manager-也可查看窗体

@@ -1,0 +1,1 @@
+每次开机重启后，程序标签页，网卡信息，选择‘Intel(R) Ethernet Connection I218’

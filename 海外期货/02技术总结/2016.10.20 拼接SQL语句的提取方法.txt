@@ -1,0 +1,8 @@
+1、创建TEMP_BX表，加入字段SQL（CLOB类型）
+在Tables下右键直接生成。
+2、在存储过程Open Cursor语句之前添加语句：
+insert into temp_bx values (v_ssql);
+commit;
+3、调试存储过程
+在存储过程上右键Test，单句执行，可以打断点，也可以移动insert into temp_bx values语句的位置找到问题的原因：
+在前台界面点击相应按钮，触发后台过程，若出现sql语句记录不增加的情况，则可判定出错的语句在此语句的前面。

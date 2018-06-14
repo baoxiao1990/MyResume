@@ -1,0 +1,63 @@
+--预入账表
+hs_secuhk.preclear.business_balance
+hs_secuhk.deliver. business_balance
+--清算合约表
+hs_secuhk.contracts.business_balance
+hs_secuhk.price.business_balance
+hs_secuhk.bargaininfo.total_amount
+hs_secuhk.bargaindetail.business _balance
+hs_secuhk.undeliver.business_balance
+以上为后台表，只有在做日终时才会有数据
+hs_secuhk.tradebusiness.business_balance
+此为券商方的成交记录表
+--委托表
+hs_secuhk.entrust.business_balance
+hs_secuhk.realtime
+hs_secuhk.fundreal
+以上为前台交易表， 表数据在下单时即产生，并实时变化
+-------------------------------买入金额--------------------------------
+hs_fund.fund.uncome_buy_balance	未回买入金额;
+hs_fund.fund.uncome_buy_balance_t1 	t1未回买入金额;
+hs_fund.fund.uncome_buy_balance_t2 	t2未回买入金额;
+hs_fund.fund.overdue_buy_balance	逾期买入金额;
+hs_fund.fund.uncome_buy_balance_tn	tn未回买入金额;
+hs_fund.fundreal.uncome_buy_balance	未回买入金额;
+hs_fund.fundreal.uncome_buy_balance_t1	t1未回买入金额;
+hs_fund.fundreal.uncome_buy_balance_t2	t2未回买入金额;
+hs_fund.fundreal.uncome_buy_balance_tn	tn未回买入金额;
+hs_fund.fundrealcp.entrust_buy_balance	委托买入金额;
+hs_fund.fundrealcp.real_buy_balance	回报买入金额;
+hs_secuhk.stock.sum_buy_balance	累计买入金额;
+hs_secuhk.stockreal.real_buy_balance	当日买入金额;
+hs_secuhk.stockreal.uncome_buy_balance	未回买入金额;
+hs_secuhk.stockreal.uncome_buy_balance_t1	t1未回买入金额;
+hs_secuhk.stockreal.uncome_buy_balance_t2	t2未回买入金额;
+hs_secuhk.stockreal.uncome_buy_balance_tn	tn未回买入金额;
+
+---------------------------------卖出金额------------------------------
+hs_fund.fund.uncome_sell_balance
+hs_fund.fund.uncome_sell_balance_t1
+hs_fund.fund.uncome_sell_balance_t2
+hs_fund.fund.overdue_sell_balance
+hs_fund.fund.uncome_sell_balance_tn
+hs_fund.fundreal.uncome_sell_balance
+hs_fund.fundreal.uncome_sell_balance_t1
+hs_fund.fundreal.uncome_sell_balance_t2
+hs_fund.fundreal.uncome_sell_balance_tn
+hs_fund.fundrealcp.real_sell_balance
+hs_secuhk.stock.sum_sell_balance
+hs_secuhk.stockreal.real_sell_balance
+hs_secuhk.stockreal.uncome_sell_balance
+hs_secuhk.stockreal.uncome_sell_balance_t1
+hs_secuhk.stockreal.uncome_sell_balance_t2
+hs_secuhk.stockreal.uncome_sell_balance_tn
+hs_secuhk.prestockreal.real_sell_balance
+hs_secuhk.preclear.uncome_sell_balance
+hs_prehk.prestockreal.real_sell_balance
+hs_prehk.prefundreal.real_sell_balance
+hs_his.totalfund.placing_uncome_sell
+------------------预埋单------------
+hs_secuhk.stockreal.prev_entrust_sell_amount	预埋单卖单数量;
+hs_secuhk.original.entrust_original	来源类型
+hs_prehk.prefundreal.enable_balance	可用数量预埋单时使用;
+hs_fund.fundreal.prev_entrust_sell_balance	预埋单卖单金额;

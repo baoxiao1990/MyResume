@@ -1,0 +1,7 @@
+控件安装问题小结：
+1. 提示控件安装不正确，或者有错误，那么直接删了重装，删了就是把控件安装路径给remove掉；
+
+2. 提示**dcu找不到，直接把相关pas文件的路径加到tools——environment options-Library-Library Path中。
+因为dcu只是中间文件，应把pas源码路径加入，最好
+
+3. Delphi查找引用文件路径的优先顺序是：先prj指定的目录，然后borland目录，最后search path指定的目录
