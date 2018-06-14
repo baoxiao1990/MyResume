@@ -1,0 +1,10 @@
+[标准可选查询条件字符串instr][@en_client_group][client_group][>][fa.]
+[标准可选查询条件字符串instr][@en_room_code][room_code][>][fa.]
+if (isnull(trim(@en_futu_room_code)) != 0)
+{
+  hs_snprintf(@sSql,CNST_SQLSTR_LEN,"%s \n %s%s%s",    @sSql,"    and FuCompStrs(to_char(h.futu_room_code),'", @en_futu_room_code, "') > 0 ");
+}
+if (isnull(trim(@en_futu_client_group)) != 0)
+{
+  hs_snprintf(@sSql,CNST_SQLSTR_LEN,"%s \n %s%s%s",    @sSql,"    and FuCompStrs(to_char(h.futu_client_group),'", @en_futu_client_group, "') > 0 ");
+}  

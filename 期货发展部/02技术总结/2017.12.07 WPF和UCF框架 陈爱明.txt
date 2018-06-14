@@ -1,0 +1,11 @@
+2017.12.07 WPF和UCF框架 陈爱明
+培训时间 下午1：30开始——
+地点：B301
+桌面技术发展历程：Delphi-Winform-WPF .NET4.7
+Winform-WPF开发环境：.NET framework
+*基本界面渲染机制：GDI+, GDI+,DirectX GPU显卡渲染，扁平化设计、更圆润
+WPF动画及特效强，很炫，性能也好
+WRF亮点
+1. 显卡渲染 2. 图形处理能力强 3. CPU GPU齐头并进 高性能UI，DirectX UI虚拟化技术 4. 界面与逻辑分离MVVM模式
+
+

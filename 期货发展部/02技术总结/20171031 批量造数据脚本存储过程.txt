@@ -1,0 +1,13 @@
+drop procedure if exists create_data;
+
+create or replace procedure create_data(num int)  as
+ i int;
+begin
+ i:=0;
+while i<num loop
+insert into hs_futu.futureal a values (20170920,i+1,8888,18,'200900010','900010','F2','0307','03072001','0','m1711-C-2650','1',1,10,255.00,35,'1','1',1,'00000000000000000000000000000005',50,150,'1','0','0',0,'m1711',0,10,20,10,10,0.000001,10,'0',0, '20170920'||'0000'||lpad('123',6,'0'));
+ i:=i+1;
+end loop;
+commit;
+end;
+

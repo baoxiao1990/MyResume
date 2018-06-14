@@ -1,0 +1,8 @@
+20180116 查询模块字段顺序注意事项【应焱烨】
+1. 列表字段：
+1=init_date$72$12$0
+2=branch_no$72$12$0
+3=fund_account$72$12$1
+2. organ_flag, room_code, client_group, futu_room_code, futu_client_group, 等客户基本信息类字段珂伊放一起
+3. 资金类字段可以放一起
+4. 期货分组、期货分类的返回字段后需加英文逗号，确保翻译正确，同时做好空值保护

@@ -1,0 +1,17 @@
+round(((case when a.futu_product_type = '2' then 0 
+        else 
+			(case when  d.price_money_type <> '0'  and trim(f.exchrate_type) is not null then 
+				(case when a.serial_no > 0 then  (case when b.futu_last_price <> 0 then (b.futu_last_price - a.square_price) else 0 end ) 
+				 else 
+					(case when b.futu_last_price <> 0 then (b.futu_last_price - a.futu_open_price) 
+					else 0 end) 
+				 end ) * nvl(f.pre_exchange_rate,0) 
+			else 
+				(case when a.serial_no > 0 then  
+					(case when b.futu_last_price <> 0 then (b.futu_last_price - a.square_price) 
+						else 0 end ) 
+				else 
+				(case when b.futu_last_price <> 0 then (b.futu_last_price - a.futu_open_price) else 0 end) 
+				end ) 
+			end) 
+		end ) * (case when a.entrust_bs = '1' then 1 else -1 end) * (a.current_amount)),3) as hold_income

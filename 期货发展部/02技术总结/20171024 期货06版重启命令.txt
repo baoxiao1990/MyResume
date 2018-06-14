@@ -1,0 +1,2 @@
+1. kill 某一个as hs命令查看到服务的id
+2. run 某一个as as_daizj

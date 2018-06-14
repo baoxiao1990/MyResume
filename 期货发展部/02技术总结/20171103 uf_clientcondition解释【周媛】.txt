@@ -1,0 +1,7 @@
+uf_clientcondition.xml
+中单选框下要加入无关，则需要在Restrict中指定；
+否则，一般的有数据字典项的，直接Restrict=""即可
+ControlKind="6" ，多选
+ControlKind="5" ，单选
+char类型的字段，如果传进来的是多选的，则传入参数应增加en_开头
+并且过滤条件用标准字符串存在instr

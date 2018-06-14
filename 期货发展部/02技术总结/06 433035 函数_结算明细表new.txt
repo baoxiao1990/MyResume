@@ -1,0 +1,382 @@
+--433035 函数_结算明细表new：
+select *
+  from (select nvl(fund_account, -1) as fund_account,
+               case
+                 when nvl(fund_account, -1) = -1 then
+                  ' '
+                 else
+                  nvl((select b.client_name
+                        from hs_user.client b
+                       where b.client_id = c.client_id),
+                      ' ')
+               end as client_name,
+               branch_no,
+               case
+                 when nvl(branch_no, -1) = -1 then
+                  ' '
+                 else
+                  (select b.branch_name
+                     from hs_user.allbranch b
+                    where b.branch_no = c.branch_no)
+               end as branch_name,
+               case
+                 when nvl(to_char(fund_account), '-1') = '-1' then
+                  ' '
+                 else
+                  nvl((select b.asset_name
+                        from hs_futures.ledgeraccinfo b
+                       where b.fund_account = c.fund_account),
+                      ' ')
+               end as asset_name,
+               sum(mr) as mr,
+               sum(mc) as mc,
+               sum(mr_price) as mr_price,
+               sum(mc_price) as mc_price,
+               sum(hold_balance) as hold_balance,
+               sum(exch_hold_balance) as exch_hold_balance,
+               sum(hold_profit) as hold_profit,
+               sum(hold_profit_float) as hold_profit_float,
+               sum(business_amount) as business_amount,
+               sum(today_amount) as today_amount,
+               sum(total_fare) as total_fare,
+               sum(deliver_fare) as deliver_fare,
+               sum(exch_fare) as exch_fare,
+               sum(return_preview) as return_preview,
+               sum(payment_balance) as payment_balance,
+               sum(drop_profit) as drop_profit,
+               sum(drop_profit_float) as drop_profit_float,
+               sum(buy_op_balance) as buy_op_balance,
+               sum(sale_op_balance) as sale_op_balance,
+               sum(op_exec_fare) as op_exec_fare,
+               sum(op_exec_exch_fare) as op_exec_exch_fare,
+               sum(op_drop_profit_float) as op_drop_profit_float,
+               sum(op_hold_profit_float) as op_hold_profit_float,
+               sum(op_exec_profit) as op_exec_profit,
+               sum(op_exec_amount) as op_exec_amount,
+               sum(op_giveup_amount) as op_giveup_amount,
+               sum(op_exec_open_amount) as op_exec_open_amount,
+               sum(op_hedge_amount) as op_hedge_amount,
+               sum(occur_balance) as occur_balance
+          from (select a.futu_exch_type,
+                       a.contract_type,
+                       a.contract_code,
+                       a.branch_no,
+                       a.fund_account,
+                       a.client_id,
+                       a.client_group,
+                       a.room_code,
+                       a.futures_account,
+                       a.entrust_bs,
+                       a.init_date,
+                       a.hedge_type as hedge_type,
+                       0 as mr,
+                       0 as mc,
+                       0 as mr_price,
+                       0 as mc_price,
+                       0 as hold_balance,
+                       0 as exch_hold_balance,
+                       nvl(a.hold_profit, 0) as hold_profit,
+                       0 as hold_profit_float,
+                       0 as business_amount,
+                       0 as today_amount,
+                       0 as total_fare,
+                       0 as deliver_fare,
+                       0 as exch_fare,
+                       0 as return_preview,
+                       0 as payment_balance,
+                       0 as drop_profit,
+                       0 as drop_profit_float,
+                       a.options_type as options_type,
+                       a.options_expire as options_expire,
+                       0 as buy_op_balance,
+                       0 as sale_op_balance,
+                       0 as op_exec_fare,
+                       0 as op_exec_exch_fare,
+                       0 as op_drop_profit_float,
+                       0 as op_hold_profit_float,
+                       0 as op_exec_profit,
+                       0 as op_exec_amount,
+                       0 as op_giveup_amount,
+                       0 as op_exec_open_amount,
+                       0 as op_hedge_amount,
+                       0 as occur_balance
+                  from hs_his.hisholdsinfo a, hs_fund.fundaccount b
+                 where a.fund_account = b.fund_account
+                   and a.amount_per_hand <> 0
+                   and instr(',' || '0' || ',',
+                             ',' || to_char(a.money_type) || ',') > 0
+                   and instr(',' || '8888,10,11,12,13,14,200,8001' || ',',
+                             ',' || to_char(a.branch_no) || ',') > 0
+                   and instr(',' || 'F1,F2,F3,F4,F5' || ',',
+                             ',' || to_char(a.futu_exch_type) || ',') > 0
+                   and instr(',' || '0,1,2' || ',',
+                             ',' || to_char(a.options_type) || ',') > 0
+                   and instr(',' || '0,1,2,3' || ',',
+                             ',' || to_char(b.organ_flag) || ',') > 0
+                   and a.init_date >= 20171228
+                   and a.init_date <= 20171228
+                   and exists (select *
+                          from hs_user.userright z
+                         where z.user_id = '7777'
+                           and z.branch_no = a.branch_no
+                           and (trim(z.en_client_group) is null or
+                               instr(',' || z.en_client_group || ',',
+                                      ',' || a.client_group || ',') > 0)
+                           and (trim(z.en_room_code) is null or
+                               instr(',' || z.en_room_code || ',',
+                                      ',' || a.room_code || ',') > 0))
+                      
+                   and a.fund_account >= 0
+                   and a.fund_account <= 2147483647
+                union all
+                select a.futu_exch_type,
+                       a.contract_type,
+                       a.contract_code,
+                       a.branch_no,
+                       a.fund_account,
+                       a.client_id,
+                       a.client_group,
+                       a.room_code,
+                       a.futures_account,
+                       a.entrust_bs,
+                       a.init_date,
+                       a.hedge_type as hedge_type,
+                       nvl(case
+                             when a.entrust_bs = 1 then
+                              a.current_amount / a.amount_per_hand
+                             else
+                              0
+                           end,
+                           0) as mr,
+                       nvl(case
+                             when a.entrust_bs = 2 then
+                              a.current_amount / a.amount_per_hand
+                             else
+                              0
+                           end,
+                           0) as mc,
+                       0 as mr_price,
+                       0 as mc_price,
+                       nvl(a.hold_balance, 0) as hold_balance,
+                       nvl(a.exch_hold_balance, 0) as exch_hold_balance,
+                       0 as hold_profit,
+                       nvl(a.hold_profit_float, 0) as hold_profit_float,
+                       0 as business_amount,
+                       0 as today_amount,
+                       0 as total_fare,
+                       0 as deliver_fare,
+                       0 as exch_fare,
+                       0 as return_preview,
+                       0 as payment_balance,
+                       0 as drop_profit,
+                       0 as drop_profit_float,
+                       a.options_type as options_type,
+                       a.options_expire as options_expire,
+                       0 as buy_op_balance,
+                       0 as sale_op_balance,
+                       0 as op_exec_fare,
+                       0 as op_exec_exch_fare,
+                       0 as op_drop_profit_float,
+                       round(nvl((case
+                                   when a.futu_product_type = '2' then
+                                    (case
+                                   when a.entrust_bs = '1' then
+                                    (a.square_price - a.futu_business_price)
+                                   else
+                                    (a.futu_business_price - a.square_price)
+                                 end) * a.current_amount *
+                                 a.pre_exchange_rate else 0 end),
+                             0), 2) as op_hold_profit_float,
+                       0 as op_exec_profit,
+                       0 as op_exec_amount,
+                       0 as op_giveup_amount,
+                       0 as op_exec_open_amount,
+                       0 as op_hedge_amount,
+                       0 as occur_balance
+                  from hs_his.hisholdsinfo a, hs_fund.fundaccount b
+                 where a.fund_account = b.fund_account
+                   and a.amount_per_hand <> 0
+                   and instr(',' || '0' || ',',
+                             ',' || to_char(a.money_type) || ',') > 0
+                   and instr(',' || '8888,10,11,12,13,14,200,8001' || ',',
+                             ',' || to_char(a.branch_no) || ',') > 0
+                   and instr(',' || 'F1,F2,F3,F4,F5' || ',',
+                             ',' || to_char(a.futu_exch_type) || ',') > 0
+                   and instr(',' || '0,1,2' || ',',
+                             ',' || to_char(a.options_type) || ',') > 0
+                   and instr(',' || '0,1,2,3' || ',',
+                             ',' || to_char(b.organ_flag) || ',') > 0
+                   and exists
+                 (select *
+                          from hs_user.userright z
+                         where z.user_id = '7777'
+                           and z.branch_no = a.branch_no
+                           and (trim(z.en_client_group) is null or
+                               instr(',' || z.en_client_group || ',',
+                                      ',' || a.client_group || ',') > 0)
+                           and (trim(z.en_room_code) is null or
+                               instr(',' || z.en_room_code || ',',
+                                      ',' || a.room_code || ',') > 0))
+                   and a.init_date = nvl((select max(init_date)
+                                           from hs_his.hisholdsinfo a
+                                          where a.init_date >= 20171228
+                                            and a.init_date <= 20171228),
+                                         -1)
+                      
+                   and a.fund_account >= 0
+                   and a.fund_account <= 2147483647
+                union all
+                select futu_exch_type,
+                       contract_type,
+                       contract_code,
+                       branch_no,
+                       fund_account,
+                       client_id,
+                       client_group,
+                       room_code,
+                       futures_account,
+                       entrust_bs,
+                       init_date,
+                       a.hedge_type as hedge_type,
+                       0 as mr,
+                       0 as mc,
+                       0 as mr_price,
+                       0 as mc_price,
+                       0 as hold_balance,
+                       0 as exch_hold_balance,
+                       0 as hold_profit,
+                       0 as hold_profit_float,
+                       nvl((case
+                             when (a.futu_product_type = '2' and
+                                  a.futures_direction = '3') or
+                                  (a.business_flag = '6203' and
+                                  a.futures_direction = '1') then
+                              0
+                             else
+                              (a.business_amount / a.amount_per_hand)
+                           end),
+                           0) as business_amount,
+                       nvl(case
+                             when a.futures_direction in ('2', '4') then
+                              a.today_amount / a.amount_per_hand
+                             else
+                              0
+                           end,
+                           0) as today_amount,
+                       nvl(a.total_fare, 0) as total_fare,
+                       nvl(a.deliver_fare, 0) as deliver_fare,
+                       nvl(a.exch_fare, 0) as exch_fare,
+                       nvl(a.return_preview, 0) as return_preview,
+                       nvl(a.payment_balance, 0) as payment_balance,
+                       nvl(a.drop_profit, 0) as drop_profit,
+                       nvl(a.drop_profit_float, 0) as drop_profit_float,
+                       a.options_type as options_type,
+                       a.options_expire as options_expire,
+                       nvl(a.buy_op_balance, 0) as buy_op_balance,
+                       nvl(a.sale_op_balance, 0) as sale_op_balance,
+                       nvl((case
+                             when a.futu_product_type = '2' and
+                                  a.futures_direction = '3' then
+                              a.deliver_fare
+                             else
+                              0
+                           end),
+                           0) as op_exec_fare,
+                       nvl((case
+                             when a.futu_product_type = '2' and
+                                  a.futures_direction = '3' then
+                              a.exch_fare
+                             else
+                              0
+                           end),
+                           0) as op_exec_exch_fare,
+                       nvl(a.op_drop_profit_float, 0) as op_drop_profit_float,
+                       0 as op_hold_profit_float,
+                       nvl((case
+                             when a.futu_product_type = '2' then
+                              a.drop_profit
+                             else
+                              0
+                           end),
+                           0) as op_exec_profit,
+                       nvl((case
+                             when (a.business_flag = '6201' and
+                                  a.futures_direction = '3' and
+                                  a.futu_product_type = '2') then
+                              (a.business_amount / a.amount_per_hand)
+                             else
+                              0
+                           end),
+                           0) as op_exec_amount,
+                       nvl((case
+                             when (a.business_flag = '6202' and
+                                  a.futures_direction = '3' and
+                                  a.futu_product_type = '2') then
+                              (a.business_amount / a.amount_per_hand)
+                             else
+                              0
+                           end),
+                           0) as op_giveup_amount,
+                       nvl((case
+                             when (a.business_flag = '6203' and
+                                  a.futures_direction = '1') then
+                              (a.business_amount / a.amount_per_hand)
+                             else
+                              0
+                           end),
+                           0) as op_exec_open_amount,
+                       nvl((case
+                             when (a.business_flag = '6204' and
+                                  a.futures_direction = '3' and
+                                  a.futu_product_type = '2') then
+                              (a.business_amount / a.amount_per_hand)
+                             else
+                              0
+                           end),
+                           0) as op_hedge_amount,
+                       nvl((case
+                             when (a.futu_product_type = '2' and
+                                  a.futures_direction = '3') or
+                                  (a.business_flag = '6203' and
+                                  a.futures_direction = '1') then
+                              0
+                             else
+                              (a.open_drop_price * a.business_amount *
+                              a.pre_exchange_rate)
+                           end),
+                           0) as occur_balance
+                  from hs_his.hisfuholddrop a
+                 where 1 = 1
+                   and instr(',' || '0' || ',',
+                             ',' || to_char(a.money_type) || ',') > 0
+                   and instr(',' || '8888,10,11,12,13,14,200,8001' || ',',
+                             ',' || to_char(a.branch_no) || ',') > 0
+                   and instr(',' || 'F1,F2,F3,F4,F5' || ',',
+                             ',' || to_char(a.futu_exch_type) || ',') > 0
+                   and instr(',' || '1,2,3,4,5' || ',',
+                             ',' || to_char(a.futures_direction) || ',') > 0
+                   and instr(',' || '0,1,2' || ',',
+                             ',' || to_char(a.options_type) || ',') > 0
+                   and instr(',' || '0,1,2,3' || ',',
+                             ',' || to_char(a.organ_flag) || ',') > 0
+                   and a.init_date >= 20171228
+                   and a.init_date <= 20171228
+                   and exists (select *
+                          from hs_user.userright z
+                         where z.user_id = '7777'
+                           and z.branch_no = a.branch_no
+                           and (trim(z.en_client_group) is null or
+                               instr(',' || z.en_client_group || ',',
+                                      ',' || a.client_group || ',') > 0)
+                           and (trim(z.en_room_code) is null or
+                               instr(',' || z.en_room_code || ',',
+                                      ',' || a.room_code || ',') > 0))
+                      
+                   and a.fund_account >= 0
+                   and a.fund_account <= 2147483647) c
+         group by branch_no, fund_account, client_id
+         order by branch_no, fund_account, client_id)
+ where 1 = 0
+    or (1 = 1)
+    or (1 = 1)
+    or (1 = 1)

@@ -1,0 +1,8 @@
+select a.init_date, a.* from hs_user.sysarg a;
+select a.init_date, a.* from hs_sett.fusettarg a;
+select a.init_date, a.* from hs_data.fudataarg a;
+
+update hs_user.sysarg a set a.init_date  = 20180103;
+update hs_sett.fusettarg set init_date =20180103, prev_date = 20180102, next_trade_date = 20180104;
+update hs_data.fudataarg set init_date =20180103, prev_date = 20180102, next_trade_date = 20180104;
+改完后同步到本地：内存表——hs_user.sysarg，hs_sett.fusettarg

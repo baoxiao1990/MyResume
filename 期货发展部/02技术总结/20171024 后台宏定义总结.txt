@@ -1,0 +1,528 @@
+instr(母串，子串)，判断是否要用instr需明确数据库中的字段存储的值，如果是诸如12457u之类的，则数据库字段作为母串，外界输入参数做子串[这种一般是单选框]，如果数据库字段存的是单独的值，而外界输入参数是多选的，则，外界输入参数作为母串，数据库字段作为子串[这种一般是多选框]
+1.[标准可选查询条件字符] 与以下instr区别在于，hs_fund.fundaccount(即a表)中存储的en_entrust_way字段是12457u之类的信息，因此用instr(a.en_entrust_way, @entrust_way)
+[标准可选查询条件字符][@organ_flag][organ_flag][=][c.]
+if (p_organ_flag != ' ' && p_organ_flag != '\0')
+{
+sprintf(v_sSql,"%s \n %s%c%s",    v_sSql,"    and a.organ_flag ='", p_organ_flag,"' ");
+}
+--
+if (@entrust_way != ' ' && @entrust_way != '\0')				
+{				
+sprintf(@sSql,"%s \n %s%c%s",    @sSql,"    and instr(a.en_entrust_way, '", @entrust_way, "') > 0 ");				
+}				
+
+2. [标准可选查询条件字符串]
+[标准可选查询条件字符串][@operator_no_q][operator_no][=][d.]
+if (isnull(trim(@operator_no_q)) != 0)
+{
+	hs_snprintf(v_sSql,CNST_SQLSTR_LEN,"%s \n %s%s%s",    v_sSql,"    and d.operator_no ='", p_operator_no_q,"' ");
+}
+
+3. [标准可选查询条件字符存在instr]
+[标准可选查询条件字符存在instr][@en_futures_direction][futures_direction][d.]	  
+if (isnull(trim(p_en_futures_direction)) != 0)
+{
+	if (length(p_en_futures_direction) == 1)
+	{
+		hs_snprintf(v_sSql,CNST_SQLSTR_LEN,"%s \n %s%s%s",    v_sSql,"    and d.futures_direction = '",p_en_futures_direction,"' ");
+	}
+	else
+	{
+		hs_snprintf(v_sSql,CNST_SQLSTR_LEN,"%s \n %s%s%s",    v_sSql,"    and instr('",p_en_futures_direction,"' , d.futures_direction) > 0 ");
+	}
+}  
+4. [标准可选查询条件字符串instr]
+[标准可选查询条件字符串instr][@en_branch_no][branch_no][>][a.]
+if (isnull(trim(p_en_branch_no)) != 0)
+{
+sprintf(@sSql,"%s \n %s%s%s",    @sSql,"    and instr(',' || '",p_en_branch_no,"' || ',', ',' ||  to_char(a.branch_no) || ',') > 0 ");
+}
+  
+----------------------------------------------------------------------20180130----------------------------------------------------------------------------------------  
+5.   [PRO*C语句][insert 
+                 into hs_data.fubillmessage (valid_date,
+                                             branch_no,
+                                             fund_account,
+                                             bill_detail,
+                                             seqno,
+                                             position_str,
+                                             serial_no,
+                                             original_serial_no,
+                                             message_title,
+                                             init_date,
+                                             curr_time,
+                                             valid_flag) 
+                 values (@valid_date,@branch_no,@fund_account,@bill_detail,@seqno,@position_str,@serial_no, 0, @message_title,@init_date, @curr_time,'1')]
+     {
+      -----------------
+     }
+     else
+     {
+       [PRO*C事务回滚]				
+       [函数报错返回][ERR_DATA_ADD_FUBILLMESSAGE_FAIL][增加账单其它信息表失败]	    
+     } 
+等价于：
+EXEC SQL insert
+				   into hs_data.fubillmessage (valid_date,
+				                                    branch_no,
+				                                    fund_account,
+				                                    bill_detail,
+				                                    seqno,
+				                                    position_str,
+				                                    serial_no,
+				                                    original_serial_no,
+				                                    message_title,
+				                                    init_date,
+				                                    curr_time,
+				                                    valid_flag)
+				 values (:p_valid_date,:p_branch_no,:p_fund_account,:p_bill_detail,:p_seqno,:v_position_str,:p_serial_no, 0, :p_message_title,:p_init_date, :p_curr_time,'1'); //sql语句
+				if (CheckDbLinkMethod(lpConn,SQLCODE) < 0)
+				{
+					if ((SQLCODE<= ERR_DB_NO_CONTINUE_FETCH) && (SQLCODE>= ERR_DB_FAILOVER_NETWORK_OPER_FAIL))
+					{
+						iReturnCode = SQLCODE;
+						v_error_no = SQLCODE;
+						hs_strncpy(v_error_info,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+						v_error_id = SQLCODE;
+						hs_strncpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+						EXEC SQL rollback;
+
+						goto svr_end;
+					}
+
+					lpConn->setErrMessage(HSDB_CONNECTION_STATUS_DISCONN,SQLCODE,sqlca.sqlerrm.sqlerrmc);
+				}
+
+				if (SQLCODE == OK_SUCCESS || SQLCODE == ERR_SELECTNODATA || SQLCODE == ERR_GETPROCOUTPUTERROR)
+				{
+				  -----------------
+				}
+				else
+				{
+					EXEC SQL rollback;
+					iReturnCode = ERR_DATA_ADD_FUBILLMESSAGE_FAIL;
+					v_error_no   = ERR_DATA_ADD_FUBILLMESSAGE_FAIL;
+					hs_snprintf(v_error_info,CNST_ERRORINFO_LEN,
+					            "%s","增加账单其它信息表失败");
+
+					goto svr_end;
+				}
+-----------------------------------------------------------------------------
+6.  [PRO*C语句块开始]
+     begin
+       select nvl(count(*),0)+1 
+		into @serial_no
+		from hs_data.fubillmessage a 
+		where a.fund_account = @fund_account
+		  and init_date = @init_date;		       
+     end;
+     [PRO*C语句块结束]
+等价于：
+    EXEC SQL EXECUTE
+				BEGIN
+				//proc语句块开始;
+				     begin
+				       select/*2488448*/ nvl(count(*),0)+1 
+						into :p_serial_no
+						from hs_data.fubillmessage a 
+						where a.fund_account = :p_fund_account
+						  and init_date = :p_init_date;		       
+				     end;
+				
+				<<svr_end>>
+				    :iReturnCode := :v_error_no;
+				END; 
+				END-EXEC;
+				
+
+				if (CheckDbLinkMethod(lpConn,SQLCODE) < 0)
+				{
+					if ((SQLCODE<= ERR_DB_NO_CONTINUE_FETCH) && (SQLCODE>= ERR_DB_FAILOVER_NETWORK_OPER_FAIL))
+					{
+						iReturnCode = SQLCODE;
+						v_error_no = SQLCODE;
+						hs_strncpy(v_error_info,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+						v_error_id = SQLCODE;
+						hs_strncpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+						EXEC SQL rollback;
+
+						goto svr_end;
+					}
+
+					lpConn->setErrMessage(HSDB_CONNECTION_STATUS_DISCONN,SQLCODE,sqlca.sqlerrm.sqlerrmc);
+				}
+
+
+				if(iReturnCode != OK_SUCCESS)
+				{
+					goto svr_end;
+				}
+
+				if (SQLCODE != OK_SUCCESS)
+				{
+					v_error_no = 119;
+					iReturnCode = 119;
+					hs_strcpy(v_error_info,"PROC语句块内部错误");
+					v_error_id = SQLCODE;
+					hs_strcpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc);
+					EXEC SQL rollback;
+					goto svr_end;
+				}     
+     
+------------------------------------------------------
+7. 
+  [PRO*C语句块开始]   
+    begin
+      select branch_no  into @branch_no 
+        from hs_asset.fundaccount a 
+       where a.fund_account = @fund_account;
+      exception 
+        when  NO_DATA_FOUND then   
+           @branch_no := 8888;      
+        when  others  then  
+        [PRO*C语句块事务内报错返回][ERR_ASSET_QRY_FUNDACCOUNT_FAIL][查询资产账号表失败][@fund_account]
+     end;                     
+  [PRO*C语句块结束]   
+等价于：
+EXEC SQL EXECUTE
+				BEGIN
+				//proc语句块开始;   
+				    begin
+				      select/*2488448*/ branch_no  into :p_branch_no 
+				        from hs_asset.fundaccount a 
+				       where a.fund_account = :p_fund_account;
+				      exception 
+				        when  NO_DATA_FOUND then   
+				           :p_branch_no := 8888;      
+				        when  others  then  
+				        :iReturnCode:= 140162;
+				        :v_error_no   := 140162;
+				        :v_error_info := substrb(
+				'查询资产账号表失败[p_fund_account='||:p_fund_account||']', 1, 500);
+				        :v_error_id   := SQLCODE;
+				        :v_error_sysinfo := substr(SQLERRM,1,500);
+				        rollback;
+				        goto svr_end;
+				     end;                     
+				
+				<<svr_end>>
+				    :iReturnCode := :v_error_no;
+				END; 
+				END-EXEC;
+				
+
+				if (CheckDbLinkMethod(lpConn,SQLCODE) < 0)
+				{
+					if ((SQLCODE<= ERR_DB_NO_CONTINUE_FETCH) && (SQLCODE>= ERR_DB_FAILOVER_NETWORK_OPER_FAIL))
+					{
+						iReturnCode = SQLCODE;
+						v_error_no = SQLCODE;
+						hs_strncpy(v_error_info,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+						v_error_id = SQLCODE;
+						hs_strncpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+						EXEC SQL rollback;
+
+						goto svr_end;
+					}
+
+					lpConn->setErrMessage(HSDB_CONNECTION_STATUS_DISCONN,SQLCODE,sqlca.sqlerrm.sqlerrmc);
+				}
+
+
+				if(iReturnCode != OK_SUCCESS)
+				{
+					goto svr_end;
+				}
+
+				if (SQLCODE != OK_SUCCESS)
+				{
+					v_error_no = 119;
+					iReturnCode = 119;
+					hs_strcpy(v_error_info,"PROC语句块内部错误");
+					v_error_id = SQLCODE;
+					hs_strcpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc);
+					EXEC SQL rollback;
+					goto svr_end;
+				}  
+				
+				
+				
+				
+7.
+[PRO*C事务提交]
+等价于
+EXEC SQL commit;		
+
+8.
+
+  [PRO*C结果集语句][select * from (
+                   select * from (
+                     select a.user_id  as operator_no,
+                         a.branch_no,
+                         a.operator_rights,
+                         a.en_client_group,
+                         a.en_room_code,
+                         a.en_contract_type,
+                         lpad(a.user_id,18,'0')||(lpad(a.branch_no,10,'0')) as position_str 
+                     from hs_user.userright a
+                        order by position_str
+                   ) where (@position_str is null or position_str > @position_str)
+                ) where @request_num = 0 or rownum <= @request_num]			
+  {				
+    [PRO*C结果集返回]
+  }				
+  else				
+  {				
+    [PRO*C结果集函数报错返回][ERR_USER_QRY_OPERATORS_FAIL][查询操作员表失败]				
+  }
+  
+  等价于：
+  //AS_经营管理_UFT调用_查询操作员权限
+int FUNCTION_CALL_MODE F2328254(IAS2Context* lpContext,IF2UnPacker * lpInUnPacker,IF2Packer * lpOutPacker)
+{
+	int iRetCode = 0;
+	EXEC SQL BEGIN DECLARE SECTION;
+		sql_context ctx = NULL;
+		char v_error_pathinfo_tmp[501] = {0};
+		char p_position_str[101] = {0};
+		int p_request_num = 0;
+		char v_operator_no_cur[19] = {0};
+		int v_branch_no_cur = 0;
+		char v_operator_rights_cur[129] = {0};
+		char v_en_client_group_cur[2001] = {0};
+		char v_en_room_code_cur[2001] = {0};
+		char v_en_contract_type_cur[33] = {0};
+		char v_position_str_cur[101] = {0};
+
+	EXEC SQL END DECLARE SECTION;
+	hs_strncpy(p_position_str,conversion((char *)lpInUnPacker->GetStr("position_str")),100);
+	p_request_num = lpInUnPacker->GetInt("request_num");
+
+	struct sqlca sqlca;
+	int p_op_branch_no = lpInUnPacker->GetInt("op_branch_no");
+	char p_operator_no[19] = {0};
+	hs_strncpy(p_operator_no,conversion((char *)lpInUnPacker->GetStr("operator_no")),18);
+	char p_user_type = conversion(lpInUnPacker->GetChar("user_type"));
+	char p_op_password[16] = {0};
+	hs_strncpy(p_op_password,conversion((char *)lpInUnPacker->GetStr("op_password")),15);
+	char p_op_station[256] = {0};
+	hs_strncpy(p_op_station,conversion((char *)lpInUnPacker->GetStr("op_station")),255);
+	char p_op_entrust_way = conversion(lpInUnPacker->GetChar("op_entrust_way"));
+	int p_menu_id = lpInUnPacker->GetInt("menu_id");
+	int p_function_id = lpInUnPacker->GetInt("function_id");
+	int p_branch_no = lpInUnPacker->GetInt("branch_no");
+	char p_audit_action = conversion(lpInUnPacker->GetChar("audit_action"));
+	int p_serial_no = 0;
+	char p_op_remark[2001] = {0};
+	int v_error_no = 0;
+	char v_error_info[501] = {0};
+	int v_error_id = 0;
+	char v_error_sysinfo[501] = {0};
+	char v_error_pathinfo[501] = {0};
+	int v_result_num = 0;
+	int iReturnCode = 0;
+	IConnection * lpConn = NULL;
+	hs_strncpy(v_error_pathinfo,conversion((char *)lpInUnPacker->GetStr("error_pathinfo")),500);
+	hs_strncat(v_error_pathinfo," -> F2328254()",500);
+	hs_strcpy(v_error_pathinfo_tmp,v_error_pathinfo);
+
+
+
+
+	lpConn = lpContext->GetDBConnection(DATADB);
+	if(lpConn)
+	{
+		ctx = lpConn->getSQLContext();
+		if (ctx)
+		{
+			EXEC SQL CONTEXT USE :ctx;
+
+			EXEC SQL DECLARE cursor23282541 CURSOR FOR select /*2328254*/ operator_no,
+			        branch_no,operator_rights,en_client_group,en_room_code,
+			        en_contract_type,position_str from (
+			                select /*2328254*/ operator_no,
+			                branch_no,operator_rights,en_client_group,en_room_code,
+			                en_contract_type,position_str from (
+			                        select /*2328254*/ a.user_id  as operator_no,
+			                        a.branch_no,
+			                        a.operator_rights,
+			                        a.en_client_group,
+			                        a.en_room_code,
+			                        a.en_contract_type,
+			                        lpad (a.user_id,18,'0')||(lpad (a.branch_no,10,'0')) as position_str
+			                        from hs_user.userright a
+
+			                        order by position_str
+			                        ) where (:p_position_str is null or position_str > :p_position_str)
+			                ) where :p_request_num = 0 or rownum <= :p_request_num;
+			EXEC SQL OPEN cursor23282541;
+			if (CheckDbLinkMethod(lpConn,SQLCODE) < 0)
+			{
+				if ((SQLCODE<= ERR_DB_NO_CONTINUE_FETCH) && (SQLCODE>= ERR_DB_FAILOVER_NETWORK_OPER_FAIL))
+				{
+					iReturnCode = SQLCODE;
+					v_error_no = SQLCODE;
+					hs_strncpy(v_error_info,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+					v_error_id = SQLCODE;
+					hs_strncpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+					EXEC SQL rollback;
+
+					goto svr_end;
+				}
+
+				lpConn->setErrMessage(HSDB_CONNECTION_STATUS_DISCONN,SQLCODE,sqlca.sqlerrm.sqlerrmc);
+			}
+
+			if (SQLCODE == OK_SUCCESS)
+			{
+				v_result_num =  0;
+				lpOutPacker->AddField("operator_no");
+				lpOutPacker->AddField("branch_no",'I');
+				lpOutPacker->AddField("operator_rights");
+				lpOutPacker->AddField("en_client_group", 'S', 2000);
+				lpOutPacker->AddField("en_room_code", 'S', 2000);
+				lpOutPacker->AddField("en_contract_type");
+				lpOutPacker->AddField("position_str");
+
+				while ( SQLCODE == OK_SUCCESS )
+				{
+					EXEC SQL FETCH cursor23282541 INTO :v_operator_no_cur
+					        ,:v_branch_no_cur,:v_operator_rights_cur,:v_en_client_group_cur,:v_en_room_code_cur
+					        ,:v_en_contract_type_cur,:v_position_str_cur;
+					if (CheckDbLinkMethod(lpConn,SQLCODE) < 0)
+					{
+						if ((SQLCODE<= ERR_DB_NO_CONTINUE_FETCH) && (SQLCODE>= ERR_DB_FAILOVER_NETWORK_OPER_FAIL))
+						{
+							iReturnCode = SQLCODE;
+							v_error_no = SQLCODE;
+							hs_strncpy(v_error_info,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+							v_error_id = SQLCODE;
+							hs_strncpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+							EXEC SQL rollback;
+
+							goto svr_end;
+						}
+
+						lpConn->setErrMessage(HSDB_CONNECTION_STATUS_DISCONN,SQLCODE,sqlca.sqlerrm.sqlerrmc);
+					}
+
+					if ( SQLCODE == OK_SUCCESS)
+					{
+						v_result_num = v_result_num + 1;
+						lpOutPacker->AddStr(trimb(v_operator_no_cur)); //systemGenerate=true
+						lpOutPacker->AddInt(v_branch_no_cur); //branch_no
+						lpOutPacker->AddStr(trimb(v_operator_rights_cur)); //systemGenerate=true
+						lpOutPacker->AddStr(trimb(v_en_client_group_cur)); //systemGenerate=true
+						lpOutPacker->AddStr(trimb(v_en_room_code_cur)); //systemGenerate=true
+						lpOutPacker->AddStr(trimb(v_en_contract_type_cur)); //systemGenerate=true
+						lpOutPacker->AddStr(trimb(v_position_str_cur)); //systemGenerate=true
+
+					}
+					else
+						break;
+				}
+
+				EXEC SQL CLOSE cursor23282541;
+			}
+			else
+			{
+				iReturnCode = ERR_USER_QRY_OPERATORS_FAIL;
+				v_error_no   = ERR_USER_QRY_OPERATORS_FAIL;
+				hs_snprintf(v_error_info,CNST_ERRORINFO_LEN,
+				            "%s","查询操作员表失败");
+				GetErrorInfo(lpContext, v_error_no, v_error_info);
+				v_error_id   = SQLCODE;
+				hs_strncpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+				EXEC SQL CLOSE cursor23282541;
+
+				goto svr_end;
+
+			}
+		}
+		else
+		{
+			iReturnCode = ERR_SYS_BUSI_GET_CONTEXT_FAIL;
+			v_error_no = ERR_SYS_BUSI_GET_CONTEXT_FAIL;
+			hs_strcpy(v_error_info, "系统忙(上下文获取失败)");
+			v_error_id   = lpConn->getErrNo();
+			sprintf(v_error_sysinfo,"%s", lpConn->getErrInfo());
+			goto svr_end;
+		}
+	}
+	else
+	{
+		iReturnCode = ERR_SYS_BUSI_GET_DBCONN_FAIL;
+		v_error_no = ERR_SYS_BUSI_GET_DBCONN_FAIL;
+		sprintf(v_error_info, "系统忙(数据库连接[%s]无法获取).", DATADB);
+		v_error_id = ERR_SYS_BUSI_GET_DBCONN_FAIL;
+		goto svr_end;
+	}
+
+	goto svr_end;
+svr_end:
+	if (iReturnCode == OK_SUCCESS || iReturnCode == ERR_SYSWARNING)
+	{}
+	else
+	{
+		GetErrorInfo(lpContext, v_error_no, v_error_info);
+		SystemErrorPacker(lpOutPacker,v_error_pathinfo,v_error_no,v_error_info);
+		WriteSystemLog(lpContext,v_error_pathinfo,v_error_no,v_error_info,v_error_id,v_error_sysinfo);
+	}
+
+
+
+
+
+
+
+	if (lpConn)
+		lpConn->toFree();
+
+	return iReturnCode;
+}
+
+--通用SELECT --
+ [通用SELECT][@sSql]				
+  {				
+    [标准结果集返回]				
+  }				
+    else				
+  {				
+  [数据库报错返回]				
+  }	
+  
+  等价于
+  lpResultSet24283151 = lpConn->executeQuery(v_sSql);
+		if (lpResultSet24283151)
+		{}
+		else
+		{
+			iReturnCode = ERR_EXEC_SQL_FAIL;
+			v_error_no = ERR_EXEC_SQL_FAIL;
+			hs_strncpy(v_error_info,"执行SQL语句失败",CNST_ERRORINFO_LEN);
+			v_error_id = lpConn->getErrNo();
+			hs_strncpy(v_error_sysinfo,lpConn->getErrInfo(),CNST_ERRORINFO_LEN);
+			goto svr_end;
+		}
+	}
+	else
+	{
+		iReturnCode = ERR_SYS_BUSI_GET_DBCONN_FAIL;
+		v_error_no = ERR_SYS_BUSI_GET_DBCONN_FAIL;
+		sprintf(v_error_info, "系统忙(数据库连接[%s]无法获取).", HISDB);
+		v_error_id = ERR_SYS_BUSI_GET_DBCONN_FAIL;
+		goto svr_end;
+	}
+
+	goto svr_end;
+svr_end:
+	if (iReturnCode == OK_SUCCESS || iReturnCode == ERR_SYSWARNING)
+	{
+		PackResultSet(lpResultSet24283151,lpOutPacker);
+	}
+	else
+	{
+		GetErrorInfo(lpContext, v_error_no, v_error_info);
+		SystemErrorPacker(lpOutPacker,v_error_pathinfo,v_error_no,v_error_info);
+		WriteSystemLog(lpContext,v_error_pathinfo,v_error_no,v_error_info,v_error_id,v_error_sysinfo);
+	}

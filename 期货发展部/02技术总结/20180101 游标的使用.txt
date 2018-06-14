@@ -1,0 +1,86 @@
+EXEC SQL DECLARE cursor23384001 CURSOR FOR select /*2338400*/ bill_detail                                     //声明游标
+			        from hs_data.fubillmessage
+			        where ((fund_account = :p_fund_account) or (fund_account = '0'))
+			        and valid_date >= :v_init_date_t//有效日期
+			        and seqno <> 8
+			        and seqno <> 9
+					    order by fund_account desc;
+			EXEC SQL OPEN cursor23384001;                                                                            //打开游标
+			if (CheckDbLinkMethod(lpConn,SQLCODE) < 0)
+			{
+				if ((SQLCODE<= ERR_DB_NO_CONTINUE_FETCH) && (SQLCODE>= ERR_DB_FAILOVER_NETWORK_OPER_FAIL))
+				{
+					iReturnCode = SQLCODE;
+					v_error_no = SQLCODE;
+					hs_strncpy(v_error_info,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+					v_error_id = SQLCODE;
+					hs_strncpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+					EXEC SQL rollback;
+
+					goto svr_end;
+				}
+
+				lpConn->setErrMessage(HSDB_CONNECTION_STATUS_DISCONN,SQLCODE,sqlca.sqlerrm.sqlerrmc);
+			}
+
+			if (SQLCODE == OK_SUCCESS)
+			{
+				EXEC SQL FETCH cursor23384001 INTO  :v_bill_detail;                                                    //获得第一条游标
+				if (CheckDbLinkMethod(lpConn,SQLCODE) < 0)
+				{
+					if ((SQLCODE<= ERR_DB_NO_CONTINUE_FETCH) && (SQLCODE>= ERR_DB_FAILOVER_NETWORK_OPER_FAIL))
+					{
+						iReturnCode = SQLCODE;
+						v_error_no = SQLCODE;
+						hs_strncpy(v_error_info,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+						v_error_id = SQLCODE;
+						hs_strncpy(v_error_sysinfo,sqlca.sqlerrm.sqlerrmc,sqlca.sqlerrm.sqlerrml);
+						EXEC SQL rollback;
+
+						goto svr_end;
+					}
+
+					lpConn->setErrMessage(HSDB_CONNECTION_STATUS_DISCONN,SQLCODE,sqlca.sqlerrm.sqlerrmc);
+				}
+
+				if (SQLCODE == OK_SUCCESS)
+				{
+					do
+					{
+						{
+							//         if ((length(@remark_x)+length(v_bill_detail)) <=2000)
+							//         {
+							//           sprintf(@remark_x, "%s%s\n", @remark_x, v_bill_detail);
+							//         }
+							if ((length(v_remark_y)+length(v_bill_detail)) <=8000)                                           //remark_y长度不能超过8000
+							{
+								sprintf(v_remark_y, "%s%s\n", v_remark_y, v_bill_detail);
+							}
+
+
+						}
+						EXEC SQL FETCH cursor23384001 INTO  :v_bill_detail;                                                //循环获取游标
+						if ((SQLCODE != OK_SUCCESS) && (SQLCODE != 100) && (SQLCODE != 1403))
+						{
+							iReturnCode = SQLCODE;
+							v_error_no = SQLCODE;
+
+							hs_strcpy(v_error_info, sqlca.sqlerrm.sqlerrmc);
+							v_error_id = 0;
+						}
+					}
+					while (SQLCODE == OK_SUCCESS);                                                                        
+				}
+				else
+				{
+					if ((SQLCODE != 100) && (SQLCODE != 1403))
+					{
+						iReturnCode = ERR_GET_PROC_CURSOR_FAIL;
+						v_error_no = ERR_GET_PROC_CURSOR_FAIL;
+						hs_strcpy(v_error_info, "取PROC游标错误");
+						v_error_id = SQLCODE;
+						hs_strcpy(v_error_sysinfo, sqlca.sqlerrm.sqlerrmc);
+					}
+				}
+
+				EXEC SQL CLOSE cursor23384001;                                                                         //关闭游标

@@ -1,0 +1,10 @@
+<plugin lib="fsc_proc" getinfo="GetBizProcSvrInfo" load_level="1" note="业务处理器插件">
+                <args thread_num="20" max_node_count="20" is_load_balanc="1" pack_pool_size="3"/>
+                <functions config="config_as.xml" node="AS_QUERY"/>
+            </plugin>
+1. fsc_proc是解析服务的插件
+2. AS_QUERY包含的so列表在config_as.xml里
+3. config_as.xml可能包括多个as转发的节点，主要包括as_all【除了查询以外的几乎其他所有】，as_trade【交易】，as_auery【查询和部分结算】
+
+hs命令得出so现在运行的所有服务
+		

@@ -1,0 +1,15 @@
+1. ls命令得出的服务，各个xml代表一个角色，其命令
+
+AS_ALL.xml
+AS_QUERY.xml 
+AS_TRADE.xml：内容<plugin lib="fsc_f2smdb" getinfo="GetsmdbInfo" load_level="1" note="内存表"/>
+BAR.xml
+以上命令都对应了一个角色，每个角色下包括了一系列主题的so，包括ls和as等，
+经过BAR.xml文件的配置，由路由进行转发，转发过程的业务逻辑调用关系由config进行配置
+<routetable functionid="2583??;" note="周边证券交易1逻辑" nodename="LS_TRADE"/>
+
+2. hsmdb_as.xml是内存表的配置：
+修改数据库后，如果系统调用的是内存表，必须重启服务，或者利用HsAdmin工具进行刷新，才能将数据库的数据同步到系统中来。
+3. more Bar.xml，可查看Bar.xml中的内容,q可退出
+4. 连接柜台，F2通道【信息中心的插件】，http协议，所以配置好IP和端口后，即可连接上
+

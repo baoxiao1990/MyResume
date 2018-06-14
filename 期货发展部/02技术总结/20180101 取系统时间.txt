@@ -1,0 +1,7 @@
+select to_number(to_char(sysdate,'yyyymmdd')),
+                    to_number(to_char(systimestamp,'hh24miss')), 
+                    to_char(systimestamp,'hh24missff3')
+               into @curr_date,
+                    @curr_time,
+                    @build_datetime
+               from dual

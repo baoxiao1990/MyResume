@@ -1,0 +1,112 @@
+期货06新增一个查询功能
+后台
+1. 组织好后台sql，申请当前和历史的服务号：421161和421808（历史）
+前台：
+1. 在procedure TClientMainForm.CreateFunction;中增加公司查询和客户查询的界面标签
+New(pTmp);
+  pTmp^.modelid := I_STOCK_INFO;
+  case MenuId of
+    MENU_QURY_KHCX:
+      pTmp^.function_id := 421161;
+    MENU_QURY_GSCX:
+      pTmp^.function_id := 421161;
+  end;
+  pTmp^.function_name := '客户资金信息';
+  pTmp^.iflag := I_HIDE;
+  if pTmp^.function_id <> 123456 then
+    lstQuery.Add(pTmp);
+2. 在procedure TClientMainForm.InitHead(iFuncID: Integer);	中增加每个功能返回字段的列头
+	420091, 421090:                                                           //SV_QURY_ORAGNINFOJOUR_1  服务_查询机构客户资料修改流水
+	begin
+	  AddListViewColumnStd('init_date', iFuncID, 8, 72, taLeftJustify);
+	  AddListViewColumnStd('curr_time', iFuncID, 8, 72, taLeftJustify);
+	  AddListViewColumnStd('serial_no', iFuncID, 8, 72, taLeftJustify);
+
+	  AddListViewColumnStd('branch_no', iFuncID, 8, 90, taRightJustify);
+	  AddListViewColumnStd('client_id', iFuncID, 8, 96, taRightJustify);
+
+	  AddListViewColumnStd('organ_name', iFuncID, 8, 140, taLeftJustify);
+
+	  AddListViewColumnStd('organname_eng', iFuncID, 8, 108, taLeftJustify);
+	  AddListViewColumnStd('company_name', iFuncID, 8, 72, taLeftJustify);
+	  AddListViewColumnStd('instrepr_name', iFuncID, 8, 72, taLeftJustify);
+	  AddListViewColumnStd('organ_code', iFuncID, 8, 140, taLeftJustify);
+
+	  AddListViewColumnStd('organ_extracode', iFuncID, 8, 140, taLeftJustify);
+	  AddListViewColumnStd('sale_licence', iFuncID, 8, 102, taRightJustify);
+	  AddListViewColumnStd('tax_register', iFuncID, 8, 72, taLeftJustify);
+	  AddListViewColumnStd('company_kind', iFuncID, 8, 96, taRightJustify);
+	  AddListViewColumnStd('work_range', iFuncID, 8, 96, taRightJustify);
+	  AddListViewColumnStd('register_fund', iFuncID, 8, 72, taLeftJustify);
+	  AddListViewColumnStd('register_money_type', iFuncID, 8, 72, taLeftJustify);
+	  
+	  AddListViewColumnStd('registry_addr_address', iFuncID, 8, 120, taLeftJustify);
+
+	  AddListViewColumnStd('organ_audit_date', iFuncID, 8, 72, taLeftJustify); //年审日期
+	  AddListViewColumnStd('business_audit_date', iFuncID, 8, 72, taLeftJustify); //年审日期
+	  AddListViewColumnStd('three_certificates', iFuncID, 8, 120, taRightJustify);
+
+	end;
+3. 在procedure TClientMainForm.InitPanel(iFuncID: Integer);	中增加面板字段列表
+	420090, 421089:                                                             //SV_QURY_ORGANINFO_1  服务_查询机构客户信息
+  begin
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'contract_person', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'contact_mobile', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'relation_idtype', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'relation_id', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'contract_tel', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'fax', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'e_mail', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'home_page', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'nationality', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'address', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'zipcode', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'control_holder', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'instrepr_telephone', iFuncID);
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'remark', iFuncID);
+	//20120412 谢军 增加开户代理人信息 开始
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_name', iFuncID); //代理人姓名
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_idtype', iFuncID); //证件类型
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_id', iFuncID); //证件号码
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_phone_number', iFuncID); //电话
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_addr_address', iFuncID); //地址
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_addr_zipcode', iFuncID); //邮政编码
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_id_begindate', iFuncID); //证件开始日期
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_id_enddate', iFuncID); //证件结束日期
+	//20120412 谢军 增加开户代理人信息  结束
+	//20130301 谢军  增加开户代理人国家,省,市字段的显示
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_addr_country', iFuncID); //代理人国家
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_addr_province', iFuncID); //代理人省
+	iOrd := iOrd + 1;
+	AddPanelItemOrdStd(iOrd, taLeftJustify, 'auth_addr_city', iFuncID); //代理人市
+	//20130301 谢军 修改  结束
+  end;
+4. 在CliQryCondition.pas 中补充查询条件
+5. 在c_futuqry.dll中发包
+6. 在clsAuFutuAllreq.pas中没有的字段，需补充进去，如en_exchange_direction
+7. 
+

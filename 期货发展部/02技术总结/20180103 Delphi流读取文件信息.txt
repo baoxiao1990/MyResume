@@ -1,0 +1,28 @@
+//20180103 Delphi流读取文件信息
+procedure TStrings.LoadFromFile(const FileName: string);
+var
+  Stream: TStream;
+begin
+  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  try
+    LoadFromStream(Stream);
+  finally
+    Stream.Free;
+  end;
+end;
+-------------------------------------------------------------------------------------------
+procedure TStrings.LoadFromStream(Stream: TStream);
+var
+  Size: Integer;
+  S: string;
+begin
+  BeginUpdate;
+  try
+    Size := Stream.Size - Stream.Position;
+    SetString(S, nil, Size);
+    Stream.Read(Pointer(S)^, Size);
+    SetTextStr(S);
+  finally
+    EndUpdate;
+  end;
+end;

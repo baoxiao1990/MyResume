@@ -1,0 +1,9 @@
+Futures06控件安装
+HSControls.dcp
+HSControls.bpl
+HSControls.dcu
+Dogskin.dll
+HsInputs.dll
+HsCtrls.dcu
+HsInput.dcu
+可以将以上文件放到一个目录下，例如C:\Program Files (x86)\Borland\Delphi6\hsrtl， 然后安装此控件
